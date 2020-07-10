@@ -241,7 +241,7 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
         locked("Interrupted while trying to add chunk request", () -> chunkSyncQueue.add(request));
     }
 
-    protected boolean send(String message, boolean skipQueue)
+    public boolean send(String message, boolean skipQueue)
     {
         if (!connected)
             return false;
