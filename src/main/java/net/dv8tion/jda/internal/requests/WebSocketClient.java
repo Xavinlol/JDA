@@ -426,18 +426,24 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
                     handleDisconnect(websocket, serverCloseFrame, clientCloseFrame, closedByServer));
             thread.setName(api.getIdentifierString() + " MainWS-ReconnectThread");
             thread.start();
+            LOG.info("Started new Thread running handleDisconnect");
         }
         else
         {
+            LOG.info("run handleDisconnect in same thread");
             handleDisconnect(websocket, serverCloseFrame, clientCloseFrame, closedByServer);
+            LOG.info("Executed handleDisconnect");
         }
     }
 
     private void handleDisconnect(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer)
     {
+        LOG.info("Called handleDisconnect");
         sentAuthInfo = false;
         connected = false;
         api.setStatus(JDA.Status.DISCONNECTED);
+
+        LOG.info("updated Status");
 
         CloseCode closeCode = null;
         int rawCloseCode = 1005;
@@ -449,9 +455,11 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
         {
             keepAliveThread.cancel(false);
             keepAliveThread = null;
+            LOG.info("Killed KeepAliveThread");
         }
         if (closedByServer && serverCloseFrame != null)
         {
+            LOG.info("Received CloseFrame");
             rawCloseCode = serverCloseFrame.getCloseCode();
             String rawCloseReason = serverCloseFrame.getCloseReason();
             closeCode = CloseCode.from(rawCloseCode);
@@ -468,6 +476,7 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
         }
         else if (clientCloseFrame != null)
         {
+            LOG.info("Received Client CloseCode");
             rawCloseCode = clientCloseFrame.getCloseCode();
             if (rawCloseCode == 1000 && INVALIDATE_REASON.equals(clientCloseFrame.getCloseReason()))
             {
@@ -485,6 +494,7 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
             {
                 ratelimitThread.shutdown();
                 ratelimitThread = null;
+                LOG.info("Killed RateLimit Thread");
             }
 
             if (!closeCodeIsReconnect)
@@ -681,7 +691,9 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
             missedHeartbeats = 0;
             LOG.warn("Missed 2 heartbeats! Trying to reconnect...");
             prepareClose();
+            LOG.info("Called prepareClose");
             socket.disconnect(4900, "ZOMBIE CONNECTION");
+            LOG.info("Disconnected socket");
         }
         else
         {
